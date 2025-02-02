@@ -9,9 +9,7 @@ import UIKit
 
 class TodoListController: UIViewController, TodoListViewProtocol {
     
-    private let todos: [TodoItem]
-    
-    private lazy var presenter: TodoListPresenterProtocol = TodoListPresenter(view: self)
+    var presenter: TodoListPresenterProtocol?
     
     private let table: UITableView = {
         let table = UITableView()
@@ -21,22 +19,9 @@ class TodoListController: UIViewController, TodoListViewProtocol {
     }()
     
     private var containerConstraint: NSLayoutConstraint?
-    private let cellIdentifier = "ToDoItemCell"
-    
-    init() {
-        self.todos = []
-        super.init(nibName: nil, bundle: nil)
-        self.presenter = TodoListPresenter(view: self)
-    }
-    
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        presenter = TodoListPresenter(view: self)
         view.backgroundColor = .white
         view.addSubview(table)
         configureTableView()
@@ -84,7 +69,7 @@ class TodoListController: UIViewController, TodoListViewProtocol {
         alert.addTextField()
         let saveButton = UIAlertAction(title: "Save", style: .default) { _ in
             guard let textName = alert.textFields?.first?.text else { return }
-            self.presenter.AddTodo(title: textName, subTitle: "")
+            self.presenter?.addTodo(title: textName, subTitle: "")
         }
         
         alert.addAction(saveButton)
@@ -92,10 +77,6 @@ class TodoListController: UIViewController, TodoListViewProtocol {
         alert.addAction(cancelButton)
         
         present(alert, animated: true)
-    }
-    
-    func reloadTableView() {
-        table.reloadData()
     }
     
     func showAlert(title: String, message: String) {
@@ -119,7 +100,7 @@ class TodoListController: UIViewController, TodoListViewProtocol {
     private func configureTableView() {
         table.delegate = self
         table.dataSource = self
-        table.register(CustomTableCell.self, forCellReuseIdentifier: cellIdentifier)
+        table.register(CustomTableCell.self, forCellReuseIdentifier: CustomTableCell.cellIdentifier)
         table.allowsSelectionDuringEditing = true
     }
     
@@ -131,23 +112,32 @@ class TodoListController: UIViewController, TodoListViewProtocol {
             table.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
+    
+    func addTodo(index: Int) {
+        table.insertRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+    }
+    
+    func remove(index: Int) {
+        table.deleteRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+    }
 }
 
 extension TodoListController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return presenter.todos.count
+        return presenter?.todos.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier,
-                                                       for: indexPath) as? CustomTableCell else {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: CustomTableCell.cellIdentifier,
+                                                       for: indexPath) as? CustomTableCell,
+              let todoItem = presenter?.todos[indexPath.row] else {
             return UITableViewCell()
         }
         
-        let todoItem = presenter.todos[indexPath.row]
         cell.configure(with: todoItem)
+        cell.delegate = self
         
         return cell
     }
@@ -156,40 +146,25 @@ extension TodoListController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
     -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: nil) { _, _, completionHandler in
-            self.presenter.deleteTodo(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .automatic)
+            self.presenter?.remove(at: indexPath.row)
             completionHandler(true)
         }
+        
         deleteAction.image = UIImage(systemName: "trash")
         deleteAction.backgroundColor = .systemRed
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
-        return configuration
+        
+        return UISwipeActionsConfiguration(actions: [deleteAction])
     }
+}
+
+extension TodoListController: CustomCellDelegate {
     
-    // move:
-    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    
-    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        presenter.moveTodo(from: sourceIndexPath.row, to: destinationIndexPath.row)
-    }
-    
-    func tableView(_ tableView: UITableView, shouldShowMenuForRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    
-    func tableView(_ tableView: UITableView, canPerformAction action: Selector,
-                   forRowAt indexPath: IndexPath, withSender sender: Any?) -> Bool {
-        guard action == #selector(copy(_:)) else { return false }
-        return true
-    }
-    
-    func tableView(_ tableView: UITableView, performAction action: Selector,
-                   forRowAt indexPath: IndexPath, withSender sender: Any?) {
-        guard action == #selector(copy(_:)) else { return }
-        let cell = tableView.cellForRow(at: indexPath)
-        let pasteBoard = UIPasteboard.general
-        pasteBoard.string = cell?.textLabel?.text
+    func tapStatusButton(cell: CustomTableCell, isSelected selected: Bool) {
+        
+        guard let indexPath = table.indexPath(for: cell) else { return }
+        
+        presenter?.todos[indexPath.row].isSelected = selected
+        
+        table.reloadRows(at: [indexPath], with: .automatic)
     }
 }

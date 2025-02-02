@@ -9,6 +9,7 @@ import Foundation
 
 protocol TodoListViewProtocol: AnyObject {
     
-    func reloadTableView()
+    func addTodo(index: Int)
+    func remove(index: Int)
     func showAlert(title: String, message: String)
 }

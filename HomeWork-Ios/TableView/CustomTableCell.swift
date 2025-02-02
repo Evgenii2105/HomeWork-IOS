@@ -7,12 +7,21 @@
 
 import UIKit
 
+protocol CustomCellDelegate: AnyObject {
+    func tapStatusButton(cell: CustomTableCell, isSelected: Bool)
+}
+
 class CustomTableCell: UITableViewCell {
+    
+    static let cellIdentifier = "ToDoItemCell"
+    
+    weak var delegate: CustomCellDelegate?
     
     private let statusButton: UIButton = {
         let statusButton = UIButton()
-        statusButton.setTitle("", for: .normal)
+        statusButton.setTitle("", for: .selected)
         statusButton.tintColor = .label
+        statusButton.setImage(.circlebadge, for: .normal)
         statusButton.translatesAutoresizingMaskIntoConstraints = false
         return statusButton
     }()
@@ -27,7 +36,7 @@ class CustomTableCell: UITableViewCell {
         return titleLabel
     }()
     
-    private let subTitleLabel: UILabel = {
+    private let subtitleLabel: UILabel = {
         let subtitle = UILabel()
         subtitle.numberOfLines = 0
         subtitle.adjustsFontSizeToFitWidth = false
@@ -47,12 +56,12 @@ class CustomTableCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.addSubview(container)
         container.addSubview(titleLabel)
-        container.addSubview(subTitleLabel)
+        container.addSubview(subtitleLabel)
         contentView.addSubview(statusButton)
         
         setupConstraints()
         
-        statusButton.addTarget(self, action: #selector(changeStateDone), for: .touchDown)
+        statusButton.addTarget(self, action: #selector(changeStateDone), for: .touchUpInside)
     }
     
     @available(*, unavailable)
@@ -65,25 +74,15 @@ class CustomTableCell: UITableViewCell {
     private func changeStateDone(_ sender: UIButton) {
         print("кнопка нажата")
         
-        if statusButton.image(for: .normal) == .circlebadge {
-            statusButton.setImage(.circlebadgeFill, for: .normal)
-        } else {
-            statusButton.setImage(.circlebadge, for: .normal)
-        }
-    }
-    
-    private func addImage(with: TodoItem) {
-        if let image = UIImage(systemName: with.image) {
-            statusButton.setImage(image, for: .normal)
-        }
+        delegate?.tapStatusButton(cell: self, isSelected: sender.isSelected)
     }
     
     func configure(with todo: TodoItem) {
         titleLabel.text = todo.title
-        subTitleLabel.text = todo.subTitle
+        subtitleLabel.text = todo.subTitle
         titleLabel.font = .systemFont(ofSize: 22)
         
-        let imageName = todo.status ? "circlebadge.fill" : "circlebadge"
+        let imageName = todo.isSelected ? "circlebadge.fill" : "circlebadge"
         statusButton.setImage(UIImage(systemName: imageName), for: .normal)
     }
     
@@ -100,10 +99,10 @@ class CustomTableCell: UITableViewCell {
             titleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             
             // Setting subTitle
-            subTitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
-            subTitleLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            subTitleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            subTitleLabel.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
+            subtitleLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            subtitleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            subtitleLabel.bottomAnchor.constraint(equalTo: container.bottomAnchor),
             
             // Setting button
             statusButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),

@@ -6,47 +6,48 @@
 //
 
 import Foundation
+import UIKit
 
 protocol TodoListPresenterProtocol {
     
-    var todos: [TodoItem] { get }
+    var todos: [TodoItem] { get set }
     
-    func AddTodo(title: String, subTitle: String)
-    func deleteTodo(at index: Int)
-    func moveTodo(from sourceIndex: Int, to destinationIndex: Int)
+    func addTodo(title: String, subTitle: String)
+    func remove(at index: Int)
 }
 
 class TodoListPresenter: TodoListPresenterProtocol {
     
-    var view: TodoListViewProtocol?
+    weak var view: TodoListViewProtocol?
     
     var todos: [TodoItem] = [
-        TodoItem(title: "Test", subTitle: "111", image: "circlebadge"),
-        TodoItem(title: "Test1", subTitle: "222", image: "circlebadge.fill"),
-        TodoItem(title: "Test3", subTitle: "333", status: true, image: "circlebadge"),
-        TodoItem(title: "Test4", subTitle: "444", status: true, image: "circlebadge.fill")
+        TodoItem(title: "Test", subTitle: "111", isSelected: false, image: Images.circlebadge),
+        TodoItem(title: "Test1", subTitle: "222", isSelected: true, image: Images.circlebadgeFill),
+        TodoItem(title: "Test3", subTitle: "333", isSelected: true, image: Images.circlebadge),
+        TodoItem(title: "Test4", subTitle: "444", isSelected: true, image: Images.circlebadgeFill)
     ]
     
-    init(view: TodoListViewProtocol?) {
-        self.view = view
-    }
-    
-    func AddTodo(title: String, subTitle: String) {
-        let newTodo = TodoItem(title: title, subTitle: subTitle, image: "circlebadge")
+    func addTodo(title: String, subTitle: String) {
+        
+        let newTodo = TodoItem(title: title, subTitle: subTitle, isSelected: false, image: Images.circlebadge)
         todos.append(newTodo)
-        view?.reloadTableView()
+        view?.addTodo(index: todos.count - 1)
     }
     
-    func deleteTodo(at index: Int) {
-        guard todos.indices.contains(index) else { return }
+    func remove(at index: Int) {
+        guard index < todos.count else { return }
+        
         todos.remove(at: index)
-        view?.reloadTableView()
+        view?.remove(index: index)
     }
+}
+
+private extension TodoListPresenter {
     
-    func moveTodo(from sourceIndex: Int, to destinationIndex: Int) {
-        guard todos.indices.contains(sourceIndex), todos.indices.contains(destinationIndex) else { return }
-        let movedItem = todos.remove(at: sourceIndex)
-        todos.insert(movedItem, at: destinationIndex)
-        view?.reloadTableView()
+    struct Images {
+        
+        static let circlebadge = UIImage(systemName: "circlebadge")!
+        static let circlebadgeFill = UIImage(systemName: "circlebadge.fill")!
+        static let trash = UIImage(systemName: "trash")!
     }
 }

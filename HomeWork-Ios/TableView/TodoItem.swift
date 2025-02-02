@@ -10,6 +10,6 @@ import UIKit
 struct TodoItem {
     var title: String
     var subTitle: String
-    var status: Bool = false
-    var image: String
+    var isSelected: Bool = false
+    var image: UIImage
 }
