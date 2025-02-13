@@ -7,7 +7,7 @@
 
 import UIKit
 
-class TodoListController: UIViewController, TodoListViewProtocol {
+class TodoListController: UIViewController, TodoListViewProtocol, CustomCellDelegate {
     
     var presenter: TodoListPresenterProtocol?
     
@@ -26,6 +26,7 @@ class TodoListController: UIViewController, TodoListViewProtocol {
         view.addSubview(table)
         configureTableView()
         setupConstraints()
+        fetchTodoList()
         setaper()
         table.rowHeight = 80
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add,
@@ -40,6 +41,23 @@ class TodoListController: UIViewController, TodoListViewProtocol {
                                                selector: #selector(moveContentDown),
                                                name: UIResponder.keyboardWillHideNotification,
                                                object: nil)
+    }
+    
+    private func fetchTodoList() {
+        let networkService = NetWorkService()
+        
+        networkService.fetchTodos(from: "https://dummyjson.com/todos") { (result: Result<TodoModel, NetWorkError>) in
+            switch result {
+            case .success(let todoModel):
+                print("Задачи загружены: \(todoModel.todos.count) шт.")
+                DispatchQueue.main.async {
+                    self.presenter?.todos = todoModel.todos.map({ $0.createCell() })
+                    self.table.reloadData()
+                }
+            case .failure(let error):
+                print("Ошибка: \(error)")
+            }
+        }
     }
     
     @objc
@@ -132,11 +150,11 @@ extension TodoListController: UITableViewDelegate, UITableViewDataSource {
         
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CustomTableCell.cellIdentifier,
                                                        for: indexPath) as? CustomTableCell,
-              let todoItem = presenter?.todos[indexPath.row] else {
+              let todoCellData = presenter?.todos[indexPath.row] else {
             return UITableViewCell()
         }
         
-        cell.configure(with: todoItem)
+        cell.configure(with: todoCellData)
         cell.delegate = self
         
         return cell
@@ -155,14 +173,11 @@ extension TodoListController: UITableViewDelegate, UITableViewDataSource {
         
         return UISwipeActionsConfiguration(actions: [deleteAction])
     }
-}
 
-extension TodoListController: CustomCellDelegate {
-    
     func tapStatusButton(cell: CustomTableCell, isSelected selected: Bool) {
         
         guard let indexPath = table.indexPath(for: cell) else { return }
-        
+
         presenter?.todos[indexPath.row].isSelected = selected
         
         table.reloadRows(at: [indexPath], with: .automatic)

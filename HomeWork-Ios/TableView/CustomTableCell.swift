@@ -19,9 +19,8 @@ class CustomTableCell: UITableViewCell {
     
     private let statusButton: UIButton = {
         let statusButton = UIButton()
-        statusButton.setTitle("", for: .selected)
+        statusButton.setTitle("", for: .normal)
         statusButton.tintColor = .label
-        statusButton.setImage(.circlebadge, for: .normal)
         statusButton.translatesAutoresizingMaskIntoConstraints = false
         return statusButton
     }()
@@ -72,18 +71,34 @@ class CustomTableCell: UITableViewCell {
     // обработка нажатия на кнопку выполнения
     @objc
     private func changeStateDone(_ sender: UIButton) {
-        print("кнопка нажата")
+        
+        if statusButton.isSelected == true {
+            statusButton.isSelected = false
+            statusButton.setImage(.circlebadge, for: .normal)
+            print("кнопка нажата состояние измененно с тру на фолсу")
+        } else {
+            statusButton.isSelected = true
+            statusButton.setImage(.circlebadgeFill, for: .normal)
+            print("кнопка нажата состояние измененно с фолс на тру")
+        }
         
         delegate?.tapStatusButton(cell: self, isSelected: sender.isSelected)
     }
     
-    func configure(with todo: TodoItem) {
+    func configure(with todo: TodoCellData) {
         titleLabel.text = todo.title
-        subtitleLabel.text = todo.subTitle
+        // subtitleLabel.text = todo.subTitle
         titleLabel.font = .systemFont(ofSize: 22)
         
-        let imageName = todo.isSelected ? "circlebadge.fill" : "circlebadge"
-        statusButton.setImage(UIImage(systemName: imageName), for: .normal)
+        if todo.isSelected == true {
+            statusButton.isSelected = true
+            statusButton.setImage(.circlebadgeFill, for: .normal)
+            print("статут тру")
+        } else {
+            statusButton.isSelected = false
+            statusButton.setImage(.circlebadge, for: .normal)
+            print("статут фолс")
+        }
     }
     
     private func setupConstraints() {
