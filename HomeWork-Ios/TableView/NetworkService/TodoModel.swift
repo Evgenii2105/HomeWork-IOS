@@ -9,28 +9,28 @@ import Foundation
 import UIKit
 
 struct TodoModel: Decodable {
- 
+    
     var todos: [TodoItem]
 }
 
 struct TodoItem: Decodable {
     
-    let todos: String?
-    let completed: Bool?
+    var title: String?
+    var isSelected: Bool = false
     let id: Int?
     
     enum CodingKeys: String, CodingKey {
         case id
-        case completed
-        case todos
+        case isSelected = "completed"
+        case title = "todo"
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        self.id = try? container.decode(Int.self, forKey: .id)
-        self.completed = try? container.decode(Bool.self, forKey: .completed)
-        self.todos = try? container.decode(String.self, forKey: .todos)
+        self.id = try container.decode(Int.self, forKey: .id)
+        self.isSelected = try container.decode(Bool.self, forKey: .isSelected)
+        self.title = try container.decode(String.self, forKey: .title)
     }
 }
 
@@ -38,9 +38,9 @@ extension TodoItem {
     
     func createCell() -> TodoCellData {
         return TodoCellData(
-            title: todos ?? "Без названия",
+            title: title ?? "Без названияzzz",
             subTitle: "",
-            isSelected: completed ?? false
+            isSelected: isSelected
         )
     }
 }

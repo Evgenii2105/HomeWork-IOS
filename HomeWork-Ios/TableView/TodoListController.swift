@@ -173,11 +173,11 @@ extension TodoListController: UITableViewDelegate, UITableViewDataSource {
         
         return UISwipeActionsConfiguration(actions: [deleteAction])
     }
-
+    
     func tapStatusButton(cell: CustomTableCell, isSelected selected: Bool) {
         
         guard let indexPath = table.indexPath(for: cell) else { return }
-
+        
         presenter?.todos[indexPath.row].isSelected = selected
         
         table.reloadRows(at: [indexPath], with: .automatic)

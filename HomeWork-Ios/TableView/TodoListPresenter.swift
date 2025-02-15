@@ -22,17 +22,10 @@ class TodoListPresenter: TodoListPresenterProtocol {
     
     var todos: [TodoCellData] = []
     
-//    var todos: [TodoItem] = [
-//        TodoItem(title: "Test", subTitle: "111", isSelected: false, image: Images.circlebadge),
-//        TodoItem(title: "Test1", subTitle: "222", isSelected: true, image: Images.circlebadgeFill),
-//        TodoItem(title: "Test3", subTitle: "333", isSelected: false, image: Images.circlebadge),
-//        TodoItem(title: "Test4", subTitle: "444", isSelected: true, image: Images.circlebadgeFill)
-//    ]
-    
     func addTodo(title: String, subTitle: String) {
-    
+        
         let newTodo = TodoCellData(title: title, subTitle: subTitle, isSelected: false)
-         todos.append(newTodo)
+        todos.append(newTodo)
         view?.addTodo(index: todos.count - 1)
     }
     

@@ -75,11 +75,9 @@ class CustomTableCell: UITableViewCell {
         if statusButton.isSelected == true {
             statusButton.isSelected = false
             statusButton.setImage(.circlebadge, for: .normal)
-            print("кнопка нажата состояние измененно с тру на фолсу")
         } else {
             statusButton.isSelected = true
             statusButton.setImage(.circlebadgeFill, for: .normal)
-            print("кнопка нажата состояние измененно с фолс на тру")
         }
         
         delegate?.tapStatusButton(cell: self, isSelected: sender.isSelected)
@@ -87,17 +85,15 @@ class CustomTableCell: UITableViewCell {
     
     func configure(with todo: TodoCellData) {
         titleLabel.text = todo.title
-        // subtitleLabel.text = todo.subTitle
+        subtitleLabel.text = todo.subTitle
         titleLabel.font = .systemFont(ofSize: 22)
         
         if todo.isSelected == true {
             statusButton.isSelected = true
             statusButton.setImage(.circlebadgeFill, for: .normal)
-            print("статут тру")
         } else {
             statusButton.isSelected = false
             statusButton.setImage(.circlebadge, for: .normal)
-            print("статут фолс")
         }
     }
     
