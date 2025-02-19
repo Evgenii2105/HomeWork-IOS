@@ -13,13 +13,25 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession,
                options connectionOptions: UIScene.ConnectionOptions) {
-    
+        
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
-        window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = CalculatorSwift()
-        window?.makeKeyAndVisible()
+        let vcc = TodoListController()
         
+        let presenter = TodoListPresenter()
+        
+        presenter.view = vcc
+        
+        vcc.presenter = presenter
+        
+        let window = UIWindow(windowScene: windowScene)
+        window.rootViewController = UINavigationController(rootViewController: vcc)
+        window.makeKeyAndVisible()
+        self.window = window
+        
+        //        window = UIWindow(windowScene: windowScene)
+        //        window?.rootViewController = TableViewController()
+        //        window?.makeKeyAndVisible()
+        //        window?.backgroundColor = .red
     }
-    
 }
